@@ -31,7 +31,7 @@ export default function Status() {
 	}, [text, isTyping])
 
 	return (
-		<div className='absolute bottom-0 left-0 p-5'>
+		<div className='absolute bottom-0 left-0 p-5 text-xs'>
 			<a
 				href='https://github.com/RubricLab/project23'
 				className='flex items-center'>

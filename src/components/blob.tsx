@@ -120,8 +120,9 @@ varying vec2 vUv;
 varying float vDisplacement;
 
 void main() {
-    float distort = 2.0 * vDisplacement * u_intensity * sin(vUv.y * 10.0 + u_time);
-    vec3 color = vec3(abs(vUv - 0.5) * 2.0  * (1.0 - distort), 1.0);
+    // Use vDisplacement to determine the shade of gray
+    float grayScale = 0.5 + 0.5 * vDisplacement; // Adjust range between 0.0 and 1.0
+    vec3 color = vec3(grayScale); // Grayscale color
     gl_FragColor = vec4(color, 1.0);
 }
 
@@ -143,8 +144,8 @@ function Blob() {
 
 		mesh.current.material.uniforms.u_intensity.value = MathUtils.lerp(
 			mesh.current.material.uniforms.u_intensity.value,
-			1,
-			0.02
+			2,
+			0.0001
 		)
 	})
 
@@ -158,6 +159,7 @@ function Blob() {
 				vertexShader={vertexShader}
 				fragmentShader={fragmentShader}
 				uniforms={uniforms}
+				wireframe={true} // Add this line
 			/>
 		</mesh>
 	)
@@ -167,7 +169,7 @@ export default function BlobCanvas() {
 		<div className='absolute z-[-1] flex h-screen w-screen items-center justify-center'>
 			<Canvas
 				className='h-full w-full'
-				camera={{fov: 50, position: [0, 0, 10]}}>
+				camera={{fov: 60, position: [0, 0, 10]}}>
 				<ambientLight intensity={0.5} />
 				<spotLight
 					position={[10, 10, 10]}
