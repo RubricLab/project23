@@ -25,6 +25,15 @@
 	}
 }
 
+@supports (-webkit-touch-callout: none) {
+	.h-screen {
+		height: -webkit-fill-available;
+	}
+	.min-h-screen {
+		min-height: -webkit-fill-available;
+	}
+}
+
 .animate-blink {
 	animation: blink 1s step-end infinite;
 }
