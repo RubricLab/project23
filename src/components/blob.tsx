@@ -1,5 +1,6 @@
 'use client'
 
+import {TrackballControls} from '@react-three/drei'
 import {Canvas, useFrame} from '@react-three/fiber'
 import {useMemo, useRef} from 'react'
 import {MathUtils} from 'three'
@@ -11,7 +12,7 @@ uniform float u_time;
 varying vec2 vUv;
 varying float vDisplacement;
 
-// Classic Perlin 3D Noise 
+// Classic Perlin 3D Noise
 // by Stefan Gustavson
 //
 vec4 permute(vec4 x) {
@@ -90,24 +91,23 @@ float cnoise(vec3 P) {
     vec3 fade_xyz = fade(Pf0);
     vec4 n_z = mix(vec4(n000, n100, n010, n110), vec4(n001, n101, n011, n111), fade_xyz.z);
     vec2 n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y);
-    float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x); 
+    float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x);
     return 2.2 * n_xyz;
 }
 
 // End of Perlin Noise Code
 
-
 void main() {
     vUv = uv;
 
     vDisplacement = cnoise(position + vec3(2.0 * u_time));
-  
+
     vec3 newPosition = position + normal * (u_intensity * vDisplacement);
-  
+
     vec4 modelPosition = modelMatrix * vec4(newPosition, 1.0);
     vec4 viewPosition = viewMatrix * modelPosition;
     vec4 projectedPosition = projectionMatrix * viewPosition;
-  
+
     gl_Position = projectedPosition;
 }
 `
@@ -125,11 +125,10 @@ void main() {
     vec3 color = vec3(grayScale); // Grayscale color
     gl_FragColor = vec4(color, 1.0);
 }
-
 `
 
 function Blob() {
-	const mesh = useRef<any>()
+	const mesh = useRef<THREE.Mesh>(null)
 	const uniforms = useMemo(() => {
 		return {
 			u_time: {value: 0},
@@ -138,15 +137,16 @@ function Blob() {
 	}, [])
 
 	useFrame(() => {
-		// Add animations or dynamic modifications here
+		if (mesh.current) {
+			const material = mesh.current.material as THREE.ShaderMaterial
 
-		mesh.current.material.uniforms.u_time.value += 0.1 * 0.01
-
-		mesh.current.material.uniforms.u_intensity.value = MathUtils.lerp(
-			mesh.current.material.uniforms.u_intensity.value,
-			2,
-			0.0001
-		)
+			material.uniforms.u_time.value += 0.1 * 0.01
+			material.uniforms.u_intensity.value = MathUtils.lerp(
+				material.uniforms.u_intensity.value,
+				2,
+				0.0001
+			)
+		}
 	})
 
 	return (
@@ -154,19 +154,19 @@ function Blob() {
 			ref={mesh}
 			position={[0, 0, 0]}>
 			<icosahedronGeometry args={[2, 50]} />
-
 			<shaderMaterial
 				vertexShader={vertexShader}
 				fragmentShader={fragmentShader}
 				uniforms={uniforms}
-				wireframe={true} // Add this line
+				wireframe={true}
 			/>
 		</mesh>
 	)
 }
+
 export default function BlobCanvas() {
 	return (
-		<div className='absolute z-[-1] flex h-screen w-screen items-center justify-center'>
+		<div className='absolute flex h-screen w-screen items-center justify-center'>
 			<Canvas
 				className='h-full w-full'
 				camera={{fov: 60, position: [0, 0, 10]}}>
@@ -178,6 +178,7 @@ export default function BlobCanvas() {
 				/>
 				<pointLight position={[-10, -10, -10]} />
 				<Blob />
+				<TrackballControls noZoom={true} />
 			</Canvas>
 		</div>
 	)
